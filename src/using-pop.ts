@@ -27,28 +27,24 @@ const action = async (patient: Patient) => {
 };
 
 async function processPatient(id: string) {
-  const [_, patient] = await worker_client
-    .multi()
-    .zRem(PATIENT_SORTED_SET, id)
-    .get(id)
-    .exec();
+  const patient = await worker_client.get(id);
   console.log('processed', patient);
 }
 
 const worker = async (batchSize: number) => {
   const queue = await worker_client.zRange(PATIENT_SORTED_SET, 0, -1);
   console.log(`Queue length: ${queue.length}`, queue);
-  const patientIdsToProcess = await worker_client.zRange(
+  const patientIdsToProcess = await worker_client.zPopMinCount(
     PATIENT_SORTED_SET,
-    0,
-    batchSize - 1
+    batchSize
   );
   console.log('patientIdsToProcess', patientIdsToProcess);
+
   await Promise.all(
     (Array.isArray(patientIdsToProcess)
       ? patientIdsToProcess
       : [patientIdsToProcess]
-    ).map(processPatient)
+    ).map((patient) => processPatient(patient.value))
   );
 };
 

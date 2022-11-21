@@ -52,7 +52,7 @@ export class PatientUpdater {
     const playersToUpdate = playerIdsToUpdate.map((id) => {
       const newState: Patient = {
         ...this.patients[id],
-        temperature: this.getRandomNumber(36, 38),
+        temperature: this.getRandomNumber(35, 39),
         lastUpdated: Math.round(Date.now() / 1000),
       };
       this.patients[id] = newState;
